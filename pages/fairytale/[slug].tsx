@@ -28,7 +28,7 @@ const FairtalePage = ({ fairytale }: PageProps) => {
 
   const generateNewStoryImage = async () => {
     // Add code here to genereate a new story image based on sanity data, be creative!
-    const imagePromt = 'placeholder'
+    const imagePromt = 'Can you create an image for this story? ' + fairytale.title;
 
     try {
       const response = await fetch('/api/openai-image', {
@@ -60,6 +60,10 @@ const FairtalePage = ({ fairytale }: PageProps) => {
   return (
     <>
       <NavigationBar />
+      <h1>{fairytale.title}</h1>
+      <p>
+        {fairytale.generateText}
+      </p>
       <main className="pb-10">
         <button
           className="px-2 m-5 rounded-md bg-slate-500"
