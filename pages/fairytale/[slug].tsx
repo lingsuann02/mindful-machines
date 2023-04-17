@@ -25,10 +25,25 @@ const handleGenerateStory = async () => {
 const FairtalePage = ({ fairytale }: PageProps) => {
   const [storyImage, setStoryImage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [keywords, setKeywords] = useState('');
 
-  const generateNewStoryImage = async () => {
+  const generateKeywords = async () => {
+    const prompt = 'Give us an highly detailed image prompt for this story:\n\n' + fairytale.generateText;
+    console.log(prompt);
+    const response = await fetch("/api/openai", {
+      method: "POST",
+      headers: {  "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt: prompt, maxToken: 500, temperature: 0.5 }),
+    });
+    const data = await response.json();
+    const text = data.text ? data.text : fairytale.title;
+    const splitText = text.split('Image Prompt:');
+    return splitText[1];
+  }
+
+  const generateNewStoryImage = async (keywords) => {
     // Add code here to genereate a new story image based on sanity data, be creative!
-    const imagePromt = 'Can you create an image for this story? ' + fairytale.title;
+    const imagePromt = 'Can you create an image for this story in the style of Kittelsen' + keywords;
 
     try {
       const response = await fetch('/api/openai-image', {
@@ -53,30 +68,36 @@ const FairtalePage = ({ fairytale }: PageProps) => {
 
   const handleGenerateImage = async () => {
     setIsLoading(true)
-    await generateNewStoryImage()
+    const _keywords = await generateKeywords()
+    setKeywords(_keywords);
+    console.log(_keywords);
+    await generateNewStoryImage(_keywords)
     setIsLoading(false)
   }
 
   return (
     <>
       <NavigationBar />
-      <h1>{fairytale.title}</h1>
-      <p>
-        {fairytale.generateText}
-      </p>
-      <main className="pb-10">
-        <button
-          className="px-2 m-5 rounded-md bg-slate-500"
-          onClick={handleGenerateImage}
-        >
-          Generate image
-        </button>
-        {isLoading && <p>Loading...</p>}
+      <div className="px-12 pt-8">
+        <h1 className="pb-5">{fairytale.title}</h1>
+        <p>
+          {fairytale.generateText}
+        </p>
+        <main className="pb-10">
+          <button
+            className="self-center px-2 m-5 text-center rounded-md bg-slate-200"
+            onClick={handleGenerateImage}
+          >
+            Generate keywords, and image
+          </button>
+          <p className="py-5">Prompt: {keywords}</p>
+          {isLoading && <p>Loading...</p>}
 
-        {storyImage && (
-          <Image src={storyImage} alt="" width={256} height={256} />
-        )}
-      </main>
+          {storyImage && (
+            <Image src={storyImage} alt="" width={512} height={512} />
+          )}
+        </main>
+      </div>
     </>
   )
 }
